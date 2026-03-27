@@ -15,7 +15,7 @@ export const login = async (credentials) => {
 
 // Profile methods
 export const getProfile = async () => {
-  const response = await axios.get(`http://localhost:8000/users/profile`, {
+  const response = await axios.get(`${API_URL}/users/users/profile`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`
     }
@@ -45,7 +45,7 @@ export const updateProfile = async (profileData) => {
     username: profileData.username,
     full_name: profileData.name
   };
-  const response = await axios.put(`http://localhost:8000/users/profile`, apiData, {
+  const response = await axios.put(`${API_URL}/users/users/profile`, apiData, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`
     }
@@ -54,7 +54,7 @@ export const updateProfile = async (profileData) => {
 };
 
 export const updatePassword = async (passwordData) => {
-  const response = await axios.put(`http://localhost:8000/users/password`, passwordData, {
+  const response = await axios.put(`${API_URL}/users/users/password`, passwordData, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`
     }
@@ -65,7 +65,7 @@ export const updatePassword = async (passwordData) => {
 export const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await axios.post(`http://localhost:8000/users/upload-avatar`, formData, {
+  const response = await axios.post(`${API_URL}/users/users/upload-avatar`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -77,7 +77,7 @@ export const uploadAvatar = async (file) => {
 export const uploadBanner = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  const response = await axios.post(`http://localhost:8000/users/upload-banner`, formData, {
+  const response = await axios.post(`${API_URL}/users0/users/upload-banner`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${localStorage.getItem("token")}`
