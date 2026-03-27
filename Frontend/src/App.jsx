@@ -1,15 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AIChatbot from "./pages/AIChatbot";
+import React from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<h1>Home</h1>} />
-        <Route path="/chatbot" element={<AIChatbot />} />
-      </Routes>
-    </BrowserRouter>
+    <Router>
+      <AppRoutes />
+    </Router>
   );
 }
 
 export default App;
+
