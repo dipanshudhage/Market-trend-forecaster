@@ -1,7 +1,8 @@
 fastapi
 uvicorn[standard]
 motor
-pymongo
+pymongo[srv]
+dnspython
 python-jose[cryptography]
 bcrypt
 python-dotenv
