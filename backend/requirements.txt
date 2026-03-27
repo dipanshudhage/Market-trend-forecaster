@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+motor
+pymongo
+python-jose[cryptography]
+bcrypt
+python-dotenv
+pandas
+requests
+beautifulsoup4
+crawl4ai
+httpx
+openpyxl
+fpdf2
