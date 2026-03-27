@@ -39,10 +39,11 @@ export const useChatStream = () => {
         const data = await fallback.json();
 
         const text =
-          data?.response ||
-          data?.message ||
-          data?.result ||
-          "No response from server";
+  data?.response ||
+  data?.reply ||   // 🔥 ADD THIS LINE
+  data?.message ||
+  data?.result ||
+  "No response from server";
 
         onChunk(text);
         return;
