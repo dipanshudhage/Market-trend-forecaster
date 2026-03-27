@@ -41,7 +41,7 @@ const AppRoutes = () => {
 
 
 
-        <Route path="chatbot" element={<AIChatbot />} />          {/* /dashboard/chatbot  */}
+        <Route path="/chatbot" element={<AIChatbot />} />          {/* /dashboard/chatbot  */}
         <Route path="forecast" element={<Forecast />} />          {/* /dashboard/forecast */}
       </Route>
     </Routes>
