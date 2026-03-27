@@ -1,0 +1,132 @@
+/* src/styles/reports.css */
+.reports-container {
+  min-height: calc(100vh - 80px);
+}
+
+/* Premium Lift + Glow Animation */
+.lift-glow {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.lift-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0);
+  transition: box-shadow 0.5s ease;
+  z-index: -1;
+}
+
+.lift-glow:hover {
+  transform: translateY(-8px) scale(1.01);
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+.lift-glow:hover::after {
+  box-shadow: 0 0 50px -10px rgba(59, 130, 246, 0.4);
+}
+
+/* Mesh Gradient for Header */
+.mesh-gradient {
+  background-color: #0f172a;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
+  background-size: 200% 200%;
+  animation: mesh-flow 15s ease infinite;
+}
+
+@keyframes mesh-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Custom Progress Bar Chart */
+.loading-bar-animated {
+  background: linear-gradient(90deg, #3b82f6 0%, #10b981 50%, #3b82f6 100%);
+  background-size: 200% 100%;
+  animation: progress-flow 2s linear infinite;
+}
+
+@keyframes progress-flow {
+  0% {
+    background-position: 100% 0%;
+  }
+
+  100% {
+    background-position: -100% 0%;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glass card enhancement */
+.glass-card {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+}
+
+.glass-card:hover {
+  background: rgba(15, 23, 42, 0.8) !important;
+}
+
+/* Dropdown override */
+select option {
+  background: #0f172a;
+  color: white;
+  padding: 10px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+  .reports-container {
+    padding: 1rem;
+  }
+}
