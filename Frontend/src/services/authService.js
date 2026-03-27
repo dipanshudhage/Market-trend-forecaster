@@ -1,11 +1,8 @@
-import API_URL from "./api";
-
-fetch(`${API_URL}/auth/login`)
-
 import axios from "axios";
 
 // 🔥 BASE API
-const API_URL = "http://localhost:8000";;
+import API_URL from "./api";
+const AUTH_API = `${API_URL}/auth`;
 
 // 🔥 CREATE AXIOS INSTANCE
 const api = axios.create({
