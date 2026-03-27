@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import API_URL from "../services/api";
 
 /**
  * Custom hook for handling progressively streamed AI responses.
@@ -11,7 +12,7 @@ export const useChatStream = () => {
         let fullText = "";
 
         try {
-            const response = await fetch("http://localhost:8000/api/chat/stream", {
+            const response = await fetch(`${API_URL}/api/chat/stream`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message, context })
