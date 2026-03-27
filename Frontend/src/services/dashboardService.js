@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://localhost:8000/api";
+import API_URL from "./api";
+const API_BASE_URL = `${API_URL}/api`;
 
 /** Returns a human-readable relative-time string like "12 minutes ago" */
 function relativeTime(minutesAgo) {
