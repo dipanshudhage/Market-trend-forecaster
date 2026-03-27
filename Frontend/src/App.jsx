@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AIChatbot from "../pages/AIChatbot";
+import AIChatbot from "./pages/AIChatbot";
 
 function AppRoutes() {
   return (
