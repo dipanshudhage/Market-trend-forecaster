@@ -13,3 +13,4 @@ crawl4ai
 httpx
 openpyxl
 fpdf2
+python-multipart
