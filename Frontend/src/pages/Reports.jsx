@@ -418,7 +418,7 @@ const Reports = () => {
               {aiSummary.detail}
             </p>
           </div>
-          <button onClick={() => navigate('/chatbot')} className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-bold text-sm transition-all flex items-center gap-2 group/btn shrink-0">
+          <button onClick={() => navigate('/dashboard/chatbot')} className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-bold text-sm transition-all flex items-center gap-2 group/btn shrink-0">
             Detailed Analysis <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
           </button>
         </div>
