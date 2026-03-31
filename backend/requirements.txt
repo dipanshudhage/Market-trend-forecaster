@@ -1,12 +1,12 @@
 fastapi
 uvicorn[standard]
 motor
-pymongo
+pymongo[srv]
+dnspython
 python-jose[cryptography]
 bcrypt
 python-dotenv
 pandas
-numpy
 requests
 beautifulsoup4
 crawl4ai
