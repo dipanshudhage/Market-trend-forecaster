@@ -5,7 +5,7 @@ fetch(`${API_URL}/auth/login`)
 import axios from "axios";
 
 // 🔥 BASE API
-const API_URL = "http://localhost:8000";;
+const API_URL = "https://market-trend-forecaster-main.onrender.com";;
 
 // 🔥 CREATE AXIOS INSTANCE
 const api = axios.create({
