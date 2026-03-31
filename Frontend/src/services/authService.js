@@ -1,15 +1,12 @@
-import API_URL from "./api";
-
-fetch(`${API_URL}/auth/login`)
-
 import axios from "axios";
+import API_URL from "./api";
 
 // 🔥 CREATE AXIOS INSTANCE
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: API_URL,
 });
 
-// 🔐 AUTO ATTACH TOKEN TO EVERY REQUEST
+// 🔐 AUTO ATTACH TOKEN
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -18,7 +15,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 🚨 HANDLE TOKEN EXPIRY / 401
+// 🚨 HANDLE 401 (SESSION EXPIRED)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -32,8 +29,9 @@ api.interceptors.response.use(
   }
 );
 
-
+//
 // 🔐 AUTH APIs
+//
 
 export const signup = async (userData) => {
   const response = await api.post("/auth/signup", userData);
@@ -45,8 +43,9 @@ export const login = async (credentials) => {
   return response.data;
 };
 
-
+//
 // 👤 PROFILE APIs
+//
 
 export const getProfile = async () => {
   const response = await api.get("/users/profile");
@@ -63,30 +62,29 @@ export const getProfile = async () => {
     stats: userData.stats || {
       forecasts: 42,
       accuracy: "89%",
-      lastLogin: "2 hours ago"
-    }
+      lastLogin: "2 hours ago",
+    },
   };
 };
-
 
 export const updateProfile = async (profileData) => {
   const apiData = {
     username: profileData.username,
-    full_name: profileData.name
+    full_name: profileData.name,
   };
 
   const response = await api.put("/users/profile", apiData);
   return response.data;
 };
 
-
 export const updatePassword = async (passwordData) => {
   const response = await api.put("/users/password", passwordData);
   return response.data;
 };
 
-
-// 📸 FILE UPLOADS
+//
+// 📸 FILE UPLOAD APIs
+//
 
 export const uploadAvatar = async (file) => {
   const formData = new FormData();
@@ -94,13 +92,12 @@ export const uploadAvatar = async (file) => {
 
   const response = await api.post("/users/upload-avatar", formData, {
     headers: {
-      "Content-Type": "multipart/form-data"
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   return response.data;
 };
-
 
 export const uploadBanner = async (file) => {
   const formData = new FormData();
@@ -108,8 +105,8 @@ export const uploadBanner = async (file) => {
 
   const response = await api.post("/users/upload-banner", formData, {
     headers: {
-      "Content-Type": "multipart/form-data"
-    }
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   return response.data;
