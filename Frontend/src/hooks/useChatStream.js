@@ -20,9 +20,9 @@ export const useChatStream = () => {
         body: JSON.stringify({ message, context }),
       });
 
-      // ✅ Fallback if streaming fails
+      // 🔥 Fallback if streaming fails
       if (!response.ok || !response.body) {
-        console.warn("Streaming failed, switching to fallback API...");
+        console.warn("Streaming failed, using fallback API...");
 
         const fallback = await fetch(`${API_URL}/api/chat`, {
           method: "POST",
@@ -39,17 +39,17 @@ export const useChatStream = () => {
         const data = await fallback.json();
 
         const text =
-  data?.response ||
-  data?.reply ||   // 🔥 ADD THIS LINE
-  data?.message ||
-  data?.result ||
-  "No response from server";
+          data?.response ||
+          data?.reply ||
+          data?.message ||
+          data?.result ||
+          "No response from server";
 
         onChunk(text);
         return;
       }
 
-      // ✅ Streaming logic
+      // 🔥 Streaming logic (SAFE VERSION)
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -64,22 +64,47 @@ export const useChatStream = () => {
         buffer = messages.pop() || "";
 
         for (const msg of messages) {
+          if (!msg.trim()) continue;
+
           if (msg.includes("data: [DONE]")) {
             setIsStreaming(false);
             return;
           }
 
           if (msg.startsWith("data: ")) {
-            try {
-              const raw = msg.slice(6);
-              const content = JSON.parse(raw);
+            const raw = msg.slice(6).trim();
 
-              if (content) {
-                fullText += content;
+            if (!raw) continue;
+
+            try {
+              // Try parsing JSON first
+              let content;
+
+              try {
+                content = JSON.parse(raw);
+              } catch {
+                // If not JSON → treat as plain text
+                content = raw;
+              }
+
+              // Handle different formats safely
+              let textChunk =
+                content?.response ||
+                content?.reply ||
+                content?.message ||
+                content?.delta ||
+                content;
+
+              if (typeof textChunk !== "string") {
+                textChunk = String(textChunk || "");
+              }
+
+              if (textChunk) {
+                fullText += textChunk;
                 onChunk(fullText);
               }
             } catch (e) {
-              console.error("Error parsing SSE chunk:", e);
+              console.error("Error processing chunk:", e);
             }
           }
         }
@@ -87,8 +112,27 @@ export const useChatStream = () => {
     } catch (error) {
       console.error("Streaming error:", error);
 
-      // ❗ Final fallback error message
-      onChunk("⚠️ Error: Unable to fetch response from server.");
+      // 🔥 Final fallback
+      try {
+        const fallback = await fetch(`${API_URL}/api/chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message, context }),
+        });
+
+        const data = await fallback.json();
+
+        const text =
+          data?.response ||
+          data?.reply ||
+          "⚠️ Unable to fetch response";
+
+        onChunk(text);
+      } catch {
+        onChunk("⚠️ Server error. Please try again.");
+      }
     } finally {
       setIsStreaming(false);
     }
