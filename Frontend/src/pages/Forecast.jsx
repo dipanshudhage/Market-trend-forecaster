@@ -10,7 +10,7 @@ import {
     Zap, ChevronDown, ChevronUp, RefreshCw, Info
 } from "lucide-react";
 
-const API = "http://localhost:8000/api/forecast";
+const API = "https://market-trend-forecaster-main.onrender.com/api/forecast";
 
 const BRAND_COLORS = {
     "echo-dot": { solid: "#3b82f6", light: "rgba(59,130,246,0.15)" },
