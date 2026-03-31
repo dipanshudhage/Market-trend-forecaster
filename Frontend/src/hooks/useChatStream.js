@@ -11,7 +11,7 @@ export const useChatStream = () => {
         let fullText = "";
 
         try {
-            const response = await fetch("localhost:8000/api/chat/stream", {
+            const response = await fetch("https://market-trend-forecaster-main.onrender.com/api/chat/stream", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message, context })
