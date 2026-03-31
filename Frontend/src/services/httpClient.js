@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const http = axios.create({
-  baseURL: "http://localhost:8000", // updated to backend port 8000
+  baseURL: "https://market-trend-forecaster-main.onrender.com", // updated to backend port 8000
 });
 
 // Automatically attach token to every request
