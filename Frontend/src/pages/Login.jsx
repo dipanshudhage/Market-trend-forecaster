@@ -49,8 +49,12 @@ const Login = () => {
       navigate("/dashboard", { replace: true });
 
     } catch (error) {
-      console.error("Login error:", error);
-      toast.error(error.response?.data?.detail || error.message || "Login failed");
+      const errDetail = error.response?.data?.detail;
+      const errorMsg = Array.isArray(errDetail) 
+        ? errDetail.map(e => e.msg).join(", ") 
+        : errDetail || error.message || "Login failed";
+      
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

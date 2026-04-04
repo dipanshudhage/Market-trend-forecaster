@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useMotionValue, useSpring, motion, useTransform, animate } from "framer-motion";
+import { useMotionValue, motion, useTransform, animate } from "framer-motion";
 
 const AnimatedCounter = ({ value, duration = 2, delay = 0, decimals = 0, suffix = "" }) => {
   const count = useMotionValue(0);

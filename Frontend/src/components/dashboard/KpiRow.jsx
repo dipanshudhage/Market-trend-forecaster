@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Heart, MessageSquareText, ThumbsUp, BellRing } from "lucide-react";
+import { motion } from "framer-motion";
 
 const AnimatedNumber = ({ value, duration = 1000, suffix = "", decimals = 0 }) => {
   const [displayValue, setDisplayValue] = useState(0);
@@ -41,7 +43,8 @@ const KpiRow = ({ summary, filters }) => {
       color: summary.overallSentiment >= 0.2 ? "text-accent" : summary.overallSentiment <= -0.2 ? "text-red-400" : "text-primary",
       trend: summary.overallSentiment >= 0 ? "↑" : "↓",
       percentage: "12%",
-      trendColor: summary.overallSentiment >= 0 ? "text-accent" : "text-red-400"
+      trendColor: summary.overallSentiment >= 0 ? "text-accent" : "text-red-400",
+      icon: <Heart className={`w-4 h-4 ${summary.overallSentiment >= 0 ? 'text-accent' : 'text-red-400'}`} />
     },
     {
       label: "Total Mentions",
@@ -51,7 +54,8 @@ const KpiRow = ({ summary, filters }) => {
       color: "text-secondary",
       trend: "↑",
       percentage: "8%",
-      trendColor: "text-accent"
+      trendColor: "text-accent",
+      icon: <MessageSquareText className="w-4 h-4 text-secondary" />
     },
     {
       label: "Positive / Negative",
@@ -62,7 +66,8 @@ const KpiRow = ({ summary, filters }) => {
       color: "text-slate-100",
       trend: "↑",
       percentage: "5%",
-      trendColor: "text-accent"
+      trendColor: "text-accent",
+      icon: <ThumbsUp className="w-4 h-4 text-emerald-400" />
     },
     {
       label: "Active Alerts",
@@ -72,7 +77,8 @@ const KpiRow = ({ summary, filters }) => {
       color: summary.activeAlerts > 0 ? "text-red-400" : "text-slate-400",
       trend: "↓",
       percentage: "2%",
-      trendColor: "text-accent"
+      trendColor: "text-accent",
+      icon: <BellRing className={`w-4 h-4 ${summary.activeAlerts > 0 ? 'text-red-400' : 'text-slate-400'}`} />
     },
   ];
 
@@ -82,12 +88,20 @@ const KpiRow = ({ summary, filters }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {kpis.map((kpi, i) => (
-        <div key={i} className="glass-card p-6 relative group overflow-hidden flex flex-col justify-between min-h-35">
+        <motion.div
+           key={i}
+           whileHover={{ scale: 1.02, y: -2 }}
+           transition={{ type: "spring", stiffness: 300, damping: 20 }}
+           className="glass-card p-6 relative group overflow-hidden flex flex-col justify-between min-h-35"
+        >
           <div className={`absolute top-0 left-0 w-1 h-full opacity-50 ${kpi.trendColor === 'text-accent' ? 'bg-accent' : 'bg-red-400'}`} />
 
           <div>
-            <div className="flex justify-between items-start mb-1">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{kpi.label}</p>
+            <div className="flex justify-between items-start mb-1 h-6">
+              <div className="flex items-center gap-1.5">
+                {kpi.icon}
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{kpi.label}</p>
+              </div>
               <div className={`flex items-center gap-1 text-[10px] font-bold ${kpi.trendColor} bg-white/5 px-2 py-0.5 rounded-full`}>
                 {kpi.trend} {kpi.percentage}
               </div>
@@ -119,7 +133,7 @@ const KpiRow = ({ summary, filters }) => {
 
           {/* Subtle background glow */}
           <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-3xl opacity-10 transition-opacity group-hover:opacity-20 ${kpi.trendColor === 'text-accent' ? 'bg-accent' : 'bg-red-400'}`} />
-        </div>
+        </motion.div>
       ))}
     </div>
   );

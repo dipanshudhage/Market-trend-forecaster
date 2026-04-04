@@ -1,0 +1,42 @@
+# Python
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Local envs / secrets
+backend/.env
+backend/venv/
+backend/backend/
+.env
+.env.*
+!.env.example
+
+# Node
+**/node_modules/
+**/dist/
+**/.vite/
+
+# Logs
+*.log
+backend/backend.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Debug / temp scripts
+reproduce_issue.py
+
+# User Uploads
+backend/app/static/uploads/*
+!backend/app/static/uploads/.gitkeep

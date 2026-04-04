@@ -4,7 +4,11 @@ import pandas as pd
 import time
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path="backend/.env")
+# 🔥 FIX: absolute base path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 🔹 Load env properly
+load_dotenv(os.path.join(BASE_DIR, "backend/.env"))
 
 API_KEY = os.getenv("YOUTUBE_API_KEY")
 
@@ -13,62 +17,76 @@ PRODUCT_QUERIES = [
     "Apple HomePod Mini review"
 ]
 
-OUTPUT_PATH = "data/processed/youtube_reviews_clean.csv"
+# 🔹 Correct output path
+OUTPUT_PATH = os.path.join(BASE_DIR, "data/processed/youtube_reviews_clean.csv")
+
+
+# ❌ If API key missing → safe exit
+if not API_KEY:
+    print(0)
+    exit()
 
 
 def search_videos(query, max_results=5):
-    url = "https://www.googleapis.com/youtube/v3/search"
-    params = {
-        "part": "snippet",
-        "q": query,
-        "type": "video",
-        "maxResults": max_results,
-        "key": API_KEY
-    }
-    r = requests.get(url, params=params)
-    data = r.json()
-    videos = []
+    try:
+        url = "https://www.googleapis.com/youtube/v3/search"
+        params = {
+            "part": "snippet",
+            "q": query,
+            "type": "video",
+            "maxResults": max_results,
+            "key": API_KEY
+        }
 
-    for item in data.get("items", []):
-        videos.append({
-            "video_id": item["id"]["videoId"],
-            "title": item["snippet"]["title"]
-        })
+        r = requests.get(url, params=params, timeout=10)
+        data = r.json()
 
-    return videos
+        videos = []
+        for item in data.get("items", []):
+            videos.append({
+                "video_id": item["id"]["videoId"],
+                "title": item["snippet"]["title"]
+            })
+
+        return videos
+
+    except:
+        return []
 
 
-def get_comments(video_id, max_comments=100):
-    url = "https://www.googleapis.com/youtube/v3/commentThreads"
-    params = {
-        "part": "snippet",
-        "videoId": video_id,
-        "maxResults": 100,
-        "key": API_KEY,
-        "textFormat": "plainText"
-    }
+def get_comments(video_id):
+    try:
+        url = "https://www.googleapis.com/youtube/v3/commentThreads"
+        params = {
+            "part": "snippet",
+            "videoId": video_id,
+            "maxResults": 100,
+            "key": API_KEY,
+            "textFormat": "plainText"
+        }
 
-    comments = []
-    r = requests.get(url, params=params)
-    data = r.json()
+        comments = []
+        r = requests.get(url, params=params, timeout=10)
+        data = r.json()
 
-    for item in data.get("items", []):
-        text = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-        comments.append(text)
+        for item in data.get("items", []):
+            text = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+            comments.append(text)
 
-    return comments
+        return comments
+
+    except:
+        return []
 
 
 all_rows = []
 
 for query in PRODUCT_QUERIES:
-    print(f"Searching videos for: {query}")
     videos = search_videos(query)
 
     product = "Google Nest Mini" if "Nest" in query else "Apple HomePod Mini"
 
     for v in videos:
-        print("Fetching comments from:", v["title"])
         comments = get_comments(v["video_id"])
 
         for c in comments:
@@ -82,11 +100,17 @@ for query in PRODUCT_QUERIES:
 
         time.sleep(1)
 
+
 df = pd.DataFrame(all_rows)
 
 if df.empty:
-    print("No YouTube comments collected")
+    print(0)
 else:
     df = df.drop_duplicates(subset=["text"])
+
+    # 🔹 Ensure folder exists
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+
     df.to_csv(OUTPUT_PATH, index=False)
-    print(f"Saved {len(df)} YouTube reviews to {OUTPUT_PATH}")
+
+    print(len(df))  # 🔥 IMPORTANT: return only number

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { MessageSquare } from 'lucide-react';
-import { getProfile } from '../services/authService';
+import { LayoutDashboard, Scale, Search, Bell, FileText, Bot, TrendingUp, LogOut, Command, User, AlertTriangle, Activity, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getProfile, logout } from '../services/authService';
 
 const getAILabel = (pathname) => {
   if (pathname.includes("reports")) return "Ask AI about reports";
@@ -12,13 +13,13 @@ const getAILabel = (pathname) => {
 
 // ── Sidebar nav items ──────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { id: '', label: 'Overview', icon: '📊', path: '/dashboard' },
-  { id: 'brands', label: 'Brand Comparison', icon: '⚖️', path: '/dashboard/brands' },
-  { id: 'explorer', label: 'Sentiment Explorer', icon: '🔍', path: '/dashboard/explorer' },
-  { id: 'alerts', label: 'Alerts', icon: '🔔', path: '/dashboard/alerts' },
-  { id: 'reports', label: 'Reports', icon: '📋', path: '/dashboard/reports' },
-  { id: 'chatbot', label: 'AI Chatbot', icon: '🤖', path: '/dashboard/chatbot' },
-  { id: 'forecast', label: 'Forecast', icon: '🔮', path: '/dashboard/forecast' },
+  { id: '', label: 'Overview', icon: LayoutDashboard, path: '/dashboard' },
+  { id: 'brands', label: 'Brand Comparison', icon: Scale, path: '/dashboard/brands' },
+  { id: 'explorer', label: 'Sentiment Explorer', icon: Search, path: '/dashboard/explorer' },
+  { id: 'alerts', label: 'Alerts', icon: Bell, path: '/dashboard/alerts' },
+  { id: 'reports', label: 'Reports', icon: FileText, path: '/dashboard/reports' },
+  { id: 'chatbot', label: 'AI Chatbot', icon: Bot, path: '/dashboard/chatbot' },
+  { id: 'forecast', label: 'Forecast', icon: TrendingUp, path: '/dashboard/forecast' },
 ];
 
 // ── Page meta derived from current path ───────────────────────────────────
@@ -43,13 +44,32 @@ function useLastUpdated() {
   return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+// ── Mock Notifications ───────────────────────────────────────────────────────
+const MOCK_NOTIFICATIONS = [
+  { id: 1, type: "alert", title: "Sentiment Drop", message: "15% drop in sentiment detected for Echo Dot.", time: "10 mins ago", icon: AlertTriangle, color: "text-red-400", bg: "bg-red-500/10" },
+  { id: 2, type: "trend", title: "New Trending Topic", message: "'Battery Drain' mentions rising across Reddit.", time: "1 hr ago", icon: Activity, color: "text-blue-400", bg: "bg-blue-500/10" },
+  { id: 3, type: "system", title: "Report Ready", message: "Your Weekly Market Intelligence Report is generated.", time: "2 hrs ago", icon: CheckCircle2, color: "text-accent", bg: "bg-accent/10" }
+];
+
 // ── DashboardLayout ────────────────────────────────────────────────────────
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const lastUpdated = useLastUpdated();
   const [profile, setProfile] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notifRef = useRef(null);
   const meta = PAGE_META[location.pathname] || { title: 'Dashboard', subtitle: '' };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -91,8 +111,80 @@ const DashboardLayout = () => {
           </div>
         </div>
 
-        {/* Right — live indicator + last updated + profile */}
+        {/* Right — search + live indicator + last updated + profile */}
         <div className="flex items-center gap-4">
+
+          {/* Quick Search Command */}
+          <button 
+            onClick={() => navigate('/dashboard/chatbot')}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950 border border-white/5 text-slate-400 hover:text-white hover:border-primary/40 transition-all cursor-pointer group"
+          >
+            <Search className="w-3.5 h-3.5 group-hover:text-primary transition-colors" />
+            <span className="text-[11px] font-medium hidden lg:block">Quick Analysis</span>
+            <div className="flex items-center gap-0.5 opacity-60 ml-2">
+              <Command className="w-3 h-3" />
+              <span className="text-[10px] font-bold">K</span>
+            </div>
+          </button>
+
+          <div className="w-px h-5 bg-white/10 hidden md:block" />
+
+          {/* Bell Notification */}
+          <div className="relative" ref={notifRef}>
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`relative p-2 transition-colors cursor-pointer group rounded-lg ${showNotifications ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            >
+              <Bell className={`w-4.5 h-4.5 ${!showNotifications && 'group-hover:animate-[wave_1s_ease-in-out_infinite]'}`} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-400 rounded-full border border-slate-900 shadow-[0_0_8px_rgba(248,113,113,0.8)]" />
+            </button>
+
+            {/* Notification Dropdown */}
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute right-0 mt-3 w-80 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right"
+                >
+                  <div className="p-4 border-b border-white/10 flex justify-between items-center bg-slate-800/50">
+                    <h3 className="text-sm font-bold text-white">Notifications</h3>
+                    <button className="text-[10px] text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider transition-colors cursor-pointer">
+                      Mark all read
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {MOCK_NOTIFICATIONS.map((notif) => {
+                      const Icon = notif.icon;
+                      return (
+                        <div key={notif.id} className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group">
+                          <div className="flex gap-3">
+                            <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${notif.bg} ${notif.color} group-hover:scale-110 transition-transform`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="text-xs font-bold text-slate-200">{notif.title}</span>
+                                <span className="text-[10px] text-slate-500 whitespace-nowrap">{notif.time}</span>
+                              </div>
+                              <p className="text-[11px] text-slate-400 leading-snug">
+                                {notif.message}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="p-3 text-center border-t border-white/5 hover:bg-white/5 transition-colors cursor-pointer cursor-pointer">
+                    <span className="text-[11px] text-slate-400 font-bold">View full log &rarr;</span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Live indicator */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
@@ -101,34 +193,10 @@ const DashboardLayout = () => {
           </div>
 
           {/* Last updated */}
-          <div className="hidden md:flex items-center gap-1.5 text-[10px] text-slate-500">
-            <svg className="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-            </svg>
+          <div className="hidden lg:flex items-center gap-1.5 text-[10px] text-slate-500">
             Updated {lastUpdated}
           </div>
 
-          {/* Divider */}
-          <div className="w-px h-5 bg-white/10" />
-
-          {/* Profile button */}
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard/profile')}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer border overflow-hidden ${location.pathname === '/dashboard/profile'
-              ? 'bg-primary/20 border-primary/40 text-primary'
-              : 'bg-slate-800 border-white/10 text-slate-400 hover:text-primary hover:border-primary/50'
-              }`}
-            aria-label="Profile"
-          >
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" fill="currentColor" />
-              </svg>
-            )}
-          </button>
         </div>
       </header>
 
@@ -139,31 +207,46 @@ const DashboardLayout = () => {
         <aside className="w-60 shrink-0 bg-slate-900/30 border-r border-white/10 p-4 flex flex-col gap-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = location.pathname === item.path;
+            const Icon = item.icon;
             return (
               <button
                 key={item.id}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer text-left w-full ${isActive
-                  ? 'bg-primary/10 text-primary border border-primary/20 shadow-[0_0_20px_rgba(56,189,248,0.08)]'
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group cursor-pointer text-left w-full relative overflow-hidden ${isActive
+                  ? 'bg-primary/5 text-primary border border-primary/20 shadow-[0_0_20px_rgba(56,189,248,0.05)]'
                   : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent'
                   }`}
                 onClick={() => navigate(item.path)}
               >
-                <span className={`text-base transition-transform group-hover:scale-110 ${isActive ? 'scale-110' : ''}`}>
-                  {item.icon}
-                </span>
-                <span className="font-medium text-sm truncate">{item.label}</span>
+                {/* Active Indicator Line */}
                 {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-r-md shadow-[0_0_10px_#38bdf8]" />
                 )}
+                
+                <span className={`transition-transform duration-300 ${isActive ? 'scale-110 text-primary drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]' : 'group-hover:scale-110 group-hover:text-white'}`}>
+                  <Icon className="w-5 h-5" />
+                </span>
+                <span className={`text-sm truncate transition-colors ${isActive ? 'font-bold text-white' : 'font-medium'}`}>{item.label}</span>
               </button>
             );
           })}
 
-          {/* Sidebar footer — version badge */}
+          {/* Sidebar footer — Profile card */}
           <div className="mt-auto pt-4 border-t border-white/5">
-            <div className="px-4 py-2 rounded-xl bg-white/2 border border-white/5">
-              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">MarketForecaster</p>
-              <p className="text-[10px] text-slate-700 mt-0.5">v0.1 · Beta</p>
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-colors flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/dashboard/profile')}>
+              <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 overflow-hidden shrink-0 group-hover:border-primary/50 transition-colors">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                    <User className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-sm font-bold text-white truncate">{profile?.username || 'Analyst'}</span>
+                <span className="text-[10px] text-slate-400 truncate">Enterprise Plan</span>
+              </div>
+              <LogOut className="w-4 h-4 text-slate-500 group-hover:text-red-400 transition-colors pointer-events-auto" onClick={(e) => { e.stopPropagation(); logout(); navigate('/login'); }} />
             </div>
           </div>
         </aside>

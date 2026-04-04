@@ -36,7 +36,6 @@ const PDFReport = ({ data, reportType, brand, channel, timeframe, trend }) => {
         const height = 200;
         const padding = 20;
 
-        const minX = 0;
         const maxX = trend.length - 1;
         const sentiments = trend.map(d => d.sentiment);
         const minY = Math.min(...sentiments);

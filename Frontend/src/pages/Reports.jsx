@@ -195,6 +195,31 @@ const Reports = () => {
 
   const handleDownload = async (report, format) => {
     if (format === "PDF") {
+      // ── Alerts, Summary & Forecast report: use backend-generated PDF directly ────────
+      if (report.id === "alerts" || report.id === "summary" || report.id === "forecast" || report.id === "topics") {
+        try {
+          setLoading(true);
+          showSuccess(`Generating ${report.title} report...`);
+          await generateReport({
+            type: report.id,
+            format: "pdf",
+            brand,
+            channel,
+            fromDate,
+            toDate,
+          });
+          addToHistory(report.title, "PDF");
+          showSuccess(`${report.title} downloaded successfully!`);
+        } catch (err) {
+          console.error(`${report.id} PDF Error:`, err);
+          setError(`Failed to generate ${report.title}. Please try again.`);
+        } finally {
+          setLoading(false);
+        }
+        return;
+      }
+
+      // ── All other report types: html2pdf preview flow ──────────────────────
       setPendingExport(true);
       showSuccess("Intelligence capture started...");
       await openPreview(report);
@@ -226,6 +251,7 @@ const Reports = () => {
       setLoading(false);
     }
   };
+
 
   const handleExportExcel = async (report) => {
     setLoading(true);
@@ -418,7 +444,7 @@ const Reports = () => {
               {aiSummary.detail}
             </p>
           </div>
-          <button onClick={() => navigate('/dashboard/chatbot')} className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-bold text-sm transition-all flex items-center gap-2 group/btn shrink-0">
+          <button onClick={() => navigate('/chatbot')} className="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white font-bold text-sm transition-all flex items-center gap-2 group/btn shrink-0">
             Detailed Analysis <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -436,23 +462,25 @@ const Reports = () => {
       <div className="glass-card mb-8 p-6 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1px bg-linear-to-r from-transparent via-blue-500/30 to-transparent" />
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
           <div className="flex flex-col gap-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Plus size={12} /> Target Brand
             </label>
-            <div className="relative group">
-              <select
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white appearance-none focus:border-blue-500/50 transition-all outline-none"
-              >
-                <option value="all">All Products</option>
-                <option value="echo-dot">Echo Dot</option>
-                <option value="nest-mini">Nest Mini</option>
-                <option value="homepod-mini">HomePod Mini</option>
-              </select>
-              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-hover:text-blue-400 transition-colors" />
+            <div className="flex flex-wrap gap-1 bg-slate-900/50 p-1 rounded-xl border border-white/10 h-[42px]">
+              {[{v: "all", l: "All Products"}, {v: "echo-dot", l: "Echo Dot"}, {v: "nest-mini", l: "Nest Mini"}, {v: "homepod-mini", l: "HomePod Mini"}].map((opt) => (
+                <button
+                  key={opt.v}
+                  onClick={() => setBrand(opt.v)}
+                  className={`flex-1 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all text-center flex items-center justify-center ${
+                    brand === opt.v
+                      ? "bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-sm shadow-blue-500/20"
+                      : "text-slate-400 border border-transparent hover:bg-white/5 hover:text-slate-200"
+                  }`}
+                >
+                  {opt.l}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -460,51 +488,41 @@ const Reports = () => {
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
               <Layers size={12} /> Distribution Channel
             </label>
-            <div className="relative group">
-              <select
-                value={channel}
-                onChange={(e) => setChannel(e.target.value)}
-                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-bold text-white appearance-none focus:border-blue-500/50 transition-all outline-none"
-              >
-                <option value="all">All Channels</option>
-                <option value="social">Social Media</option>
-                <option value="reviews">Product Reviews</option>
-                <option value="news">News & PR</option>
-              </select>
-              <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none group-hover:text-blue-400 transition-colors" />
+            <div className="flex flex-wrap gap-1 bg-slate-900/50 p-1 rounded-xl border border-white/10 h-[42px]">
+              {[{v: "all", l: "All Channels"}, {v: "social", l: "Social"}, {v: "reviews", l: "Reviews"}, {v: "news", l: "News & PR"}].map((opt) => (
+                <button
+                  key={opt.v}
+                  onClick={() => setChannel(opt.v)}
+                  className={`flex-1 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all text-center flex items-center justify-center ${
+                    channel === opt.v
+                      ? "bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-sm shadow-blue-500/20"
+                      : "text-slate-400 border border-transparent hover:bg-white/5 hover:text-slate-200"
+                  }`}
+                >
+                  {opt.l}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="md:col-span-2 flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                <Calendar size={12} /> Analysis Timeframe
-              </label>
-              <div className="flex gap-1">
-                <DatePresetCard label="7D" active={dateRange === "7d"} onClick={() => handlePresetClick("7d")} />
-                <DatePresetCard label="30D" active={dateRange === "30d"} onClick={() => handlePresetClick("30d")} />
-                <DatePresetCard label="90D" active={dateRange === "90d"} onClick={() => handlePresetClick("90d")} />
-               
-              </div>
-            </div>
-
-            <div className={`grid - cols - 2 gap - 3 transition - all duration - 300 ${dateRange === "custom" ? "opacity-100 translate-y-0" : "opacity-30 pointer-events-none"}`}>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold text-white outline-none focus:border-blue-500/50 appearance-none"
-                />
-              </div>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold text-white outline-none focus:border-blue-500/50 appearance-none transition-all"
-                />
-              </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+              <Calendar size={12} /> Analysis Timeframe
+            </label>
+            <div className="flex gap-1 h-[42px] bg-slate-900/50 p-1 rounded-xl border border-white/10">
+              {[{v: "7d", l: "7D"}, {v: "30d", l: "30D"}, {v: "90d", l: "90D"}].map((opt) => (
+                <button
+                  key={opt.v}
+                  onClick={() => handlePresetClick(opt.v)}
+                  className={`flex-1 px-2 rounded-lg text-xs font-bold transition-all duration-300 flex items-center justify-center ${
+                    dateRange === opt.v
+                      ? "bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-sm shadow-blue-500/20"
+                      : "text-slate-400 border border-transparent hover:bg-white/5 hover:text-slate-200"
+                  }`}
+                >
+                  {opt.l}
+                </button>
+              ))}
             </div>
           </div>
         </div>

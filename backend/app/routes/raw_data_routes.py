@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.utils.auth import get_current_user
 from app.database import raw_data_collection
 
@@ -70,6 +70,8 @@ async def update_reviews(current_user=Depends(get_current_user)):
             "message": f"{added_reviews} new reviews added for {today}"
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         return {
             "status": "error",
