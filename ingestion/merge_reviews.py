@@ -1,88 +1,110 @@
 import pandas as pd
-from datetime import datetime, timedelta
 import random
+import os
+from datetime import datetime
+
+# 🔥 Absolute path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUTPUT_FILE = os.path.join(BASE_DIR, "data/processed/all_reviews_clean.csv")
+
 
 def standardize_date(date_str, platform):
-    """Modernize old dates and assign defaults for missing ones to create a continuous demo timeline."""
-    target_date = datetime(2026, 3, 16) # Current "Now" for demo
-    
     if platform == "amazon":
-        # Amazon Alexa data is from 2018. Shift it to Feb 2026 for a "Previous Month" look.
-        # Original format: 31-Jul-18
-        try:
-            # We'll spread these across February 2026
-            day = random.randint(1, 28)
-            return f"2026-02-{day:02d}"
-        except:
-            return "2026-02-15"
-            
+        return f"2026-02-{random.randint(1,28):02d}"
+
     if platform == "news":
-        # News already has 2026-02-12T14:04:48Z, just clean it
         if not date_str or pd.isna(date_str):
             return "2026-03-01"
         return str(date_str)[:10]
 
-    # For YouTube and Web (currently missing dates in merged input), spread them across March 2026
-    day = random.randint(1, 16)
-    return f"2026-03-{day:02d}"
+    return f"2026-03-{random.randint(1,16):02d}"
 
-# Load raw processed files
-amazon = pd.read_csv("data/processed/amazon_reviews_clean.csv")
-youtube = pd.read_csv("data/processed/youtube_reviews_clean.csv")
-web = pd.read_csv("data/processed/web_reviews_scraped.csv")
-# Also include news if available (it was missing from original merge_reviews.py)
-try:
-    news = pd.read_csv("data/processed/news_articles_clean.csv")
-except:
-    news = pd.DataFrame()
 
-# Standardize Amazon
-amazon_std = pd.DataFrame({
-    "platform": "amazon",
-    "product": amazon["product"],
-    "text": amazon["review_content"],
-    "date": [standardize_date(d, "amazon") for d in amazon.get("review_date", [None]*len(amazon))]
-})
+# 🔹 SAFE LOAD
+def safe_read(filename):
+    path = os.path.join(BASE_DIR, filename)
 
-# Standardize Youtube
-youtube_std = pd.DataFrame({
-    "platform": "youtube",
-    "product": youtube["product"],
-    "text": youtube["text"],
-    "date": [standardize_date(None, "youtube") for _ in range(len(youtube))]
-})
+    print(f"Reading: {path}")   # 🔥 DEBUG
 
-# Standardize Web
-web_std = pd.DataFrame({
-    "platform": "web",
-    "product": web["product"],
-    "text": web["review_content"],
-    "date": [standardize_date(None, "web") for _ in range(len(web))]
-})
+    if not os.path.exists(path):
+        print(f"File NOT FOUND: {path}")
+        return pd.DataFrame()
 
-# Standardize News
-news_std = pd.DataFrame()
-if not news.empty:
-    news_std = pd.DataFrame({
-        "platform": "news",
-        "product": news["product"],
-        "text": news["text"],
-        "date": [standardize_date(d, "news") for d in news.get("published_at", [None]*len(news))]
+    try:
+        # Check if file has header by reading only 0 rows
+        df_header = pd.read_csv(path, nrows=0)
+        df = pd.read_csv(path)
+        print(f"Loaded {len(df)} rows")
+        return df
+    except Exception as e:
+        print(f"Error reading {path}: {e}")
+        return pd.DataFrame()
+
+
+amazon = safe_read("data/processed/amazon_reviews_clean.csv")
+youtube = safe_read("data/processed/youtube_reviews_clean.csv")
+web = safe_read("data/processed/web_reviews_scraped.csv")
+news = safe_read("data/processed/news_articles_clean.csv")
+
+
+# 🔹 SAFE COLUMN EXTRACTOR
+def get_col(df, col, default=""):
+    return df[col] if col in df.columns else [default]*len(df)
+
+
+# 🔹 STANDARDIZE
+def build_df(df, platform, text_col):
+    if df.empty:
+        return pd.DataFrame()
+
+    text_series = get_col(df, text_col, "").astype(str)
+
+    return pd.DataFrame({
+        "platform": platform,
+        "product": get_col(df, "product", ""),
+        "text": text_series,
+        "date": [standardize_date(None, platform) for _ in range(len(df))]
     })
 
-# Merge everything
-all_dfs = [amazon_std, youtube_std, web_std]
-if not news_std.empty:
-    all_dfs.append(news_std)
+
+amazon_std = build_df(amazon, "amazon", "review_content")
+youtube_std = build_df(youtube, "youtube", "text")
+web_std = build_df(web, "web", "review_content")
+news_std = build_df(news, "news", "text")
+
+
+# 🔹 MERGE
+all_dfs = [df for df in [amazon_std, youtube_std, web_std, news_std] if not df.empty]
+
+if not all_dfs:
+    print(0)
+    exit()
 
 merged = pd.concat(all_dfs, ignore_index=True)
 
-merged = merged.drop_duplicates(subset=["text"])
-merged = merged[merged["text"].astype(str).str.len() > 20]
 
-# Filter out rows where date is the column header or invalid
-merged = merged[~merged["date"].str.contains("published_at|date", case=False, na=False)]
+# 🔹 CLEAN (SAFE)
+merged["text"] = merged["text"].astype(str)
+merged["date"] = datetime.today().strftime("%Y-%m-%d")
+merged = merged.drop_duplicates(subset=["text", "platform"])
+merged = merged[merged["text"].str.len() > 20]
 
-merged.to_csv("data/processed/all_reviews_clean.csv", index=False)
 
-print(f"Saved {len(merged)} total reviews with date metadata to data/processed/all_reviews_clean.csv")
+# 🔥 APPEND + COUNT
+
+if os.path.exists(OUTPUT_FILE):
+    try:
+        existing = pd.read_csv(OUTPUT_FILE)
+        combined = pd.concat([existing, merged], ignore_index=True)
+        combined = combined.drop_duplicates(subset=["text", "platform"])
+        added_count = len(combined) - len(existing)
+        combined.to_csv(OUTPUT_FILE, index=False)
+        print(max(added_count, 0))
+    except Exception as e:
+        # If file is corrupted or headerless, overwrite it correctly
+        merged.to_csv(OUTPUT_FILE, index=False)
+        print(len(merged))
+
+else:
+    merged.to_csv(OUTPUT_FILE, index=False)
+    print(len(merged))

@@ -28,6 +28,11 @@ STOPWORDS = {
     "sir", "sirji", "please", "video", "bhai", "aap", "liye", "batao", "bataiye", "hoga", "hai", "nahi", "nhi", "karo",
     "that", "have", "are", "from", "at", "by", "as", "an", "be", "was", "were", "been", "has", "had", "do", "does", "did"
 }
+def get_latest_date(df_in: pd.DataFrame) -> datetime:
+    """Return the most recent date in the dataframe, or a placeholder if empty."""
+    if df_in.empty or 'date' not in df_in.columns:
+        return datetime(2026, 3, 16)
+    return pd.to_datetime(df_in['date']).max()
 
 @router.get("/sentiment")
 async def get_sentiment(
@@ -63,13 +68,14 @@ async def get_sentiment(
             filtered_df = filtered_df[filtered_df['platform'].str.contains(mapped_platform, case=False, na=False)]
 
         # 2. Date Range Filtering
-        now = datetime(2026, 3, 16) # Fixed "now" for demo consistency
+        now = get_latest_date(df)
         
         if range:
             days_map = {"7d": 7, "30d": 30, "90d": 90}
             days = days_map.get(range, 30)
             start_limit = now - timedelta(days=days)
-            filtered_df = filtered_df[filtered_df['date'] >= start_limit]
+            # Use a strict window: start_limit <= date <= now
+            filtered_df = filtered_df[(filtered_df['date'] >= start_limit) & (filtered_df['date'] <= now)]
 
         if filtered_df.empty:
             return {
@@ -189,6 +195,8 @@ async def get_sentiment(
             "trend_comparison": trend_comparison,
             "platform_breakdown": readable_platform_breakdown,
         }
+    except HTTPException as he:
+        raise he
     except Exception as e:
         import traceback
         print(traceback.format_exc())
@@ -332,6 +340,8 @@ async def get_brand_comparison(
 
         return {"brands": result, "insight": insight}
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

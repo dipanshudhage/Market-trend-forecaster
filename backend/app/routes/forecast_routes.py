@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
 import pandas as pd
 import numpy as np
@@ -15,7 +15,11 @@ BRAND_CONFIGS = [
     {"id": "homepod-mini", "name": "HomePod Mini",  "csv_key": "Apple HomePod Mini"},
 ]
 
-NOW = datetime(2026, 3, 16)
+def get_latest_date(df_in: pd.DataFrame) -> datetime:
+    """Return the most recent date in the dataframe, or a placeholder if empty."""
+    if df_in.empty or 'date' not in df_in.columns:
+        return datetime(2026, 3, 16)
+    return pd.to_datetime(df_in['date']).max()
 
 
 def linear_forecast(daily_df: pd.DataFrame, horizon_days: int = 30):
@@ -82,12 +86,15 @@ def get_risk_level(current: float, std_err: float, slope: float) -> dict:
 async def get_forecast(horizon: int = Query(30, ge=7, le=90)):
     """Return per-brand linear forecast for the given horizon (7–90 days)."""
     try:
+        # Load data and determine dynamic NOW
         df = pd.read_csv(DATA_PATH, sep="\t")
         df["date"] = pd.to_datetime(df.get("date", "2026-03-16"))
+        now = get_latest_date(df)
 
         # Use last 90 days as baseline for regression
-        cutoff = NOW - timedelta(days=90)
-        df = df[df["date"] >= cutoff]
+        cutoff = now - timedelta(days=90)
+        df_filtered = df[(df["date"] >= cutoff) & (df["date"] <= now)]
+        df = df_filtered
 
         brands_out = []
         for brand in BRAND_CONFIGS:
@@ -179,9 +186,11 @@ async def get_forecast(horizon: int = Query(30, ge=7, le=90)):
             "drivers":      drivers,
             "risk_factors": risk_factors,
             "horizon_days": horizon,
-            "as_of":        NOW.strftime("%Y-%m-%d"),
+            "as_of":        now.strftime("%Y-%m-%d"),
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         import traceback
         print(traceback.format_exc())

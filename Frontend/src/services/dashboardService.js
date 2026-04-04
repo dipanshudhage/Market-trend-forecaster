@@ -1,6 +1,7 @@
 import axios from "axios";
+import API_URL from "./api";
 
-const API_BASE_URL = "https://market-trend-forecaster-main.onrender.com/api";
+const API_BASE_URL = `${API_URL}/api`;
 
 /** Returns a human-readable relative-time string like "12 minutes ago" */
 function relativeTime(minutesAgo) {

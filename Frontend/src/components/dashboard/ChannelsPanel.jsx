@@ -6,7 +6,7 @@ const ChannelsPanel = ({ channels }) => {
   const totalMentions = (channels || []).reduce((acc, c) => acc + c.mentions, 0);
 
   return (
-    <div className="glass-card p-6 flex flex-col gap-4">
+    <div className="glass-card p-6 flex flex-col gap-4 h-full max-h-[500px]">
 
   <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
     <span className="text-xl">🌐</span> Channels

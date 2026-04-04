@@ -52,6 +52,8 @@ async def signup(user: UserCreate):
             "user_id": str(result.inserted_id)
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print("SIGNUP ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
@@ -101,6 +103,8 @@ async def login(user: UserLogin):
             }
         }
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         print("LOGIN ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))

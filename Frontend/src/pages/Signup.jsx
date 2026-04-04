@@ -44,7 +44,12 @@ const Signup = () => {
       toast.success("Account created successfully! Please login.");
       navigate("/login");
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Signup failed");
+      const errDetail = error.response?.data?.detail;
+      const errorMsg = Array.isArray(errDetail) 
+        ? errDetail.map(e => e.msg).join(", ") 
+        : errDetail || error.message || "Signup failed";
+      
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

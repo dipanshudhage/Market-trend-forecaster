@@ -6,7 +6,7 @@ const RecentActivityPanel = ({ activities }) => {
     if (!activities || activities.length === 0) return null;
 
     return (
-        <div className="glass-card flex flex-col overflow-hidden max-h-130">
+        <div className="glass-card flex flex-col overflow-hidden h-full max-h-[500px]">
 
     <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">

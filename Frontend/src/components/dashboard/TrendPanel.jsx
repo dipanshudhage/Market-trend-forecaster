@@ -128,8 +128,6 @@ const TrendPanel = ({ trendData, activeProduct }) => {
               ? Object.keys(trendData)[context.datasetIndex]
               : activeProduct;
             
-            const point = (isComparisonMode ? trendData[productId] : trendData[activeProduct])[context.dataIndex];
-            
             if (isComparisonMode) {
                 const productName = PRODUCT_COLORS[productId]?.label || productId;
                 return `${productName}: ${(context.parsed.y * 100).toFixed(1)}%`;

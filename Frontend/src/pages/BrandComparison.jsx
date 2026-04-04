@@ -347,15 +347,21 @@ const BrandComparison = () => {
           <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">Brand Comparison</h1>
           <p className="text-slate-400">Side-by-side analysis of smart speaker market performance</p>
         </div>
-        <select
-          className="bg-slate-900 border border-white/10 rounded-xl px-4 py-2 text-sm font-medium text-slate-300 outline-none cursor-pointer self-start"
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value)}
-        >
-          <option value="7d">Last 7 Days</option>
-          <option value="30d">Last 30 Days</option>
-          <option value="90d">Last 90 Days</option>
-        </select>
+        <div className="flex bg-slate-900/50 p-1 rounded-xl border border-white/10 self-start">
+          {[{v: "7d", l: "Last 7 Days"}, {v: "30d", l: "Last 30 Days"}, {v: "90d", l: "Last 90 Days"}].map((opt) => (
+            <button
+              key={opt.v}
+              onClick={() => setDateRange(opt.v)}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 ${
+                dateRange === opt.v
+                  ? "bg-primary/20 text-primary border border-primary/50 shadow-[0_0_10px_rgba(56,189,248,0.2)]"
+                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200 border border-transparent"
+              }`}
+            >
+              {opt.l}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── PERFORMANCE METRICS TABLE ────────────────────────────────────── */}

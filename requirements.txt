@@ -6,7 +6,6 @@ python-jose[cryptography]
 bcrypt
 python-dotenv
 pandas
-numpy
 requests
 beautifulsoup4
 crawl4ai

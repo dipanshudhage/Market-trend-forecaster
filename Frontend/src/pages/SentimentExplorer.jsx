@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getSentimentExplorerData } from "../services/dashboardService";
+import { Search, Hash, Target, ChevronDown, Activity, ChevronRight, BarChart } from "lucide-react";
 
 const SentimentExplorer = () => {
     const [loading, setLoading] = useState(true);
@@ -57,34 +58,40 @@ const SentimentExplorer = () => {
     };
 
     return (
-        <div className="flex flex-col gap-8 animate-in fade-in duration-700">
-            <div className="flex flex-col gap-1">
-                <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">Sentiment Explorer</h1>
+        <div className="flex flex-col gap-6 animate-in fade-in duration-700 h-full">
+            <div className="flex flex-col gap-1 shrink-0">
+                <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight flex items-center gap-3">
+                    <Activity className="text-primary"/> Sentiment Explorer
+                </h1>
                 <p className="text-slate-400">Deep dive into raw consumer feedback and social signal data</p>
             </div>
 
-            {/* Filter Bar */}
-            <div className="flex flex-col gap-4 bg-slate-900/50 p-6 rounded-2xl border border-white/5 backdrop-blur-md">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Source</label>
-                        <select
-                            className="bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-300 outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
-                            value={filters.source}
-                            onChange={(e) => handleFilterChange("source", e.target.value)}
-                        >
-                            <option value="all">All Sources</option>
-                            <option value="amazon-reviews">Amazon Reviews</option>
-                            <option value="youtube">YouTube Comments</option>
-                            <option value="news">News Articles</option>
-                            <option value="web-reviews">Review Sites</option>
-                        </select>
+            {/* Quick Filters - Pill Style */}
+            <div className="flex items-center justify-between gap-4 bg-slate-900/50 p-3 rounded-2xl border border-white/5 backdrop-blur-md shrink-0">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-2 border-r border-white/10 pr-4 mr-2">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-2">Sentiment</span>
+                        <div className="flex gap-1 bg-slate-950 p-1 rounded-lg border border-white/5">
+                            {["all", "positive", "neutral", "negative"].map(s => (
+                                <button 
+                                    key={s} 
+                                    onClick={() => handleFilterChange("sentiment", s)}
+                                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${
+                                        filters.sentiment === s 
+                                        ? s === "positive" ? "bg-accent/20 text-accent" : s === "negative" ? "bg-red-400/20 text-red-400" : s === "all" ? "bg-primary/20 text-primary" : "bg-white/10 text-white"
+                                        : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+                                    }`}
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Product</label>
+                    <div className="flex items-center gap-2">
+                        <Target size={14} className="text-slate-500" />
                         <select
-                            className="bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-300 outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
+                            className="bg-slate-950 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-300 outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer appearance-none pr-8"
                             value={filters.product}
                             onChange={(e) => handleFilterChange("product", e.target.value)}
                         >
@@ -94,24 +101,10 @@ const SentimentExplorer = () => {
                         </select>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sentiment</label>
+                    <div className="flex items-center gap-2">
+                        <Hash size={14} className="text-slate-500" />
                         <select
-                            className="bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-300 outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
-                            value={filters.sentiment}
-                            onChange={(e) => handleFilterChange("sentiment", e.target.value)}
-                        >
-                            <option value="all">All Sentiments</option>
-                            <option value="positive">Positive</option>
-                            <option value="neutral">Neutral</option>
-                            <option value="negative">Negative</option>
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Topic</label>
-                        <select
-                            className="bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-300 outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
+                            className="bg-slate-950 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-300 outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer appearance-none pr-8"
                             value={filters.topic}
                             onChange={(e) => handleFilterChange("topic", e.target.value)}
                         >
@@ -122,103 +115,112 @@ const SentimentExplorer = () => {
                     </div>
                 </div>
 
-                <div className="h-px bg-white/5 my-2" />
-
-                <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Search Keywords</label>
-                    <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
-                        <input
-                            type="text"
-                            placeholder="Search across reviews and comments..."
-                            className="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                            value={filters.search}
-                            onChange={handleSearchChange}
-                        />
-                    </div>
+                <div className="relative w-64">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><Search size={14}/></span>
+                    <input
+                        type="text"
+                        placeholder="Search feedback..."
+                        className="w-full bg-slate-950 border border-white/10 rounded-lg pl-9 pr-4 py-1.5 text-xs font-medium text-slate-200 outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        value={filters.search}
+                        onChange={handleSearchChange}
+                    />
                 </div>
             </div>
 
-            {/* Results Header */}
-            <div className="flex items-center justify-between px-2">
-                <span className="text-sm font-bold text-slate-400">
-                    Showing <span className="text-slate-100">{data.results.length}</span> of <span className="text-slate-100">{data.total}</span> results
-                </span>
+            {/* DATA GRID TABLE 2.0 */}
+            <div className="flex-1 overflow-hidden flex flex-col glass-card border border-white/5 rounded-2xl relative shadow-2xl">
+                
+                {/* Scrollable Container */}
+                <div className="overflow-auto custom-scrollbar flex-1 relative">
+                    <table className="w-full text-left border-collapse">
+                        {/* STICKY GLASS HEADER */}
+                        <thead className="sticky top-0 bg-slate-950/80 backdrop-blur-md z-10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                            <tr>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5">Source</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5">Product / Topic</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 w-1/2">Key Feedback</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 text-right">Sentiment Impact</th>
+                            </tr>
+                        </thead>
 
-                {/* Pagination Controls */}
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => handlePageChange(filters.page - 1)}
-                        disabled={filters.page === 1 || loading}
-                        className="p-2 rounded-lg bg-slate-900 border border-white/5 text-slate-400 disabled:opacity-30 hover:bg-slate-800 transition-all"
-                    >
-                        ← Prev
-                    </button>
-                    <span className="text-xs font-black text-slate-500 bg-slate-900 px-3 py-2 rounded-lg border border-white/5">
-                        Page {filters.page}
-                    </span>
-                    <button
-                        onClick={() => handlePageChange(filters.page + 1)}
-                        disabled={data.results.length < 20 || loading}
-                        className="p-2 rounded-lg bg-slate-900 border border-white/5 text-slate-400 disabled:opacity-30 hover:bg-slate-800 transition-all"
-                    >
-                        Next →
-                    </button>
+                        <tbody className="divide-y divide-white/5">
+                            {loading ? (
+                                [...Array(5)].map((_, i) => (
+                                    <tr key={i} className="animate-pulse">
+                                        <td className="px-6 py-6"><div className="h-4 bg-white/5 rounded-full w-24"></div></td>
+                                        <td className="px-6 py-6"><div className="h-4 bg-white/5 rounded-full w-32"></div></td>
+                                        <td className="px-6 py-6"><div className="h-4 bg-white/5 rounded-full w-full"></div></td>
+                                        <td className="px-6 py-6"><div className="h-4 bg-white/5 rounded-full w-16 ml-auto"></div></td>
+                                    </tr>
+                                ))
+                            ) : data.results.length > 0 ? (
+                                data.results.map((r, idx) => {
+                                    const rawScore = r.sentiment_score || 0;
+                                    const mappedProgress = Math.min(100, Math.max(5, Math.abs(rawScore * 100)));
+                                    const baseColor = rawScore >= 0.2 ? 'accent' : rawScore <= -0.2 ? 'red-400' : 'slate-400';
+
+                                    return (
+                                        <tr key={idx} className="hover:bg-white/5 transition-colors group cursor-pointer">
+                                            {/* Source Cell */}
+                                            <td className="px-6 py-5 whitespace-nowrap">
+                                                <span className="px-3 py-1 rounded bg-slate-950 border border-white/5 text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 w-max">
+                                                    <div className={`w-1.5 h-1.5 rounded-full bg-${baseColor}`}></div>
+                                                    {r.platform}
+                                                </span>
+                                            </td>
+
+                                            {/* Entity Cell */}
+                                            <td className="px-6 py-5 whitespace-nowrap">
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-xs font-bold text-slate-200">{r.product}</span>
+                                                    <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+                                                        <Hash size={10} /> {r.topic}
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            {/* Text Block */}
+                                            <td className="px-6 py-5">
+                                                <p className="text-sm text-slate-300 leading-relaxed max-w-xl group-hover:text-slate-100 transition-colors">
+                                                    &ldquo;{r.text}&rdquo;
+                                                </p>
+                                            </td>
+
+                                            {/* Sentiment Sparkline */}
+                                            <td className="px-6 py-5 whitespace-nowrap text-right">
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <div className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border bg-${baseColor}/10 text-${baseColor} border-${baseColor}/20`}>
+                                                        {r.sentiment_label}
+                                                    </div>
+                                                    
+                                                    {/* Inline Horizontal Sparkbar */}
+                                                    <div className="flex items-center gap-2 w-32 justify-end">
+                                                        <span className="text-[10px] text-slate-500 font-bold">{rawScore.toFixed(2)}</span>
+                                                        <div className="w-16 h-1.5 bg-slate-900 rounded-full overflow-hidden flex justify-start">
+                                                            <div 
+                                                                className={`h-full rounded-full transition-all duration-1000 bg-${baseColor} ${rawScore < 0 ? 'ml-auto' : ''}`}
+                                                                style={{ width: `${mappedProgress}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-24 text-center">
+                                        <div className="flex flex-col items-center justify-center text-slate-500 italic">
+                                            <span className="text-4xl mb-4 opacity-50"><BarChart/></span>
+                                            No matching records found in the sentiment index.
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-
-            {/* Results List */}
-            <div className="flex flex-col gap-4">
-                {loading ? (
-                    <div className="flex flex-col gap-4 animate-pulse">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="h-40 bg-slate-900/40 rounded-2xl border border-white/5" />
-                        ))}
-                    </div>
-                ) : data.results.length > 0 ? (
-                    data.results.map((r, idx) => (
-                        <div key={idx} className="glass-card p-6 flex flex-col gap-4 hover:border-primary/30 transition-all group">
-                            <div className="flex flex-wrap items-center justify-between gap-4">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="px-2.5 py-1 rounded bg-slate-950 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                        {r.platform}
-                                    </span>
-                                    <span className="px-2.5 py-1 rounded bg-slate-950 border border-white/10 text-[10px] font-black text-primary uppercase tracking-widest">
-                                        {r.product}
-                                    </span>
-                                    <span className="px-2.5 py-1 rounded bg-slate-950 border border-white/10 text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                                        {r.topic}
-                                    </span>
-                                </div>
-                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${r.sentiment_label === 'Positive' ? 'bg-accent/10 text-accent border-accent/20' :
-                                        r.sentiment_label === 'Negative' ? 'bg-red-400/10 text-red-400 border-red-400/20' :
-                                            'bg-slate-400/10 text-slate-400 border-slate-400/20'
-                                    }`}>
-                                    {r.sentiment_label}
-                                </div>
-                            </div>
-
-                            <p className="text-sm text-slate-300 leading-relaxed group-hover:text-slate-100 transition-colors">
-                                "{r.text}"
-                            </p>
-
-                            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase">Sentiment Score: {r.sentiment_score.toFixed(2)}</span>
-                                </div>
-                                <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline transition-all">
-                                    Analyze Record →
-                                </button>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="h-64 flex flex-col items-center justify-center text-slate-500 bg-slate-900/20 border border-dashed border-white/10 rounded-2xl italic">
-                        <span className="text-3xl mb-2">🔍</span>
-                        No matching records found for this selection
-                    </div>
-                )}
             </div>
 
             {/* Bottom Pagination */}

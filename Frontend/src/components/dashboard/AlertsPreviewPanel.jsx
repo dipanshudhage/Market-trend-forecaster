@@ -12,7 +12,7 @@ const AlertsPreviewPanel = ({ alerts }) => {
   };
 
   return (
-    <div className="glass-card p-6 flex flex-col gap-4 max-h-130">
+    <div className="glass-card p-6 flex flex-col gap-4 h-full max-h-[500px]">
 
       <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
         <span className="text-xl">🔔</span> Recent Alerts
